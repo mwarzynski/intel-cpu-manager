@@ -1,4 +1,5 @@
 use intel_pstate::{PState, PStateError};
+use sysinfo::{CpuRefreshKind, RefreshKind, System as SysInfoSystem};
 use systemstat::{Platform, System};
 
 use std::env;
@@ -48,7 +49,20 @@ fn print_info() -> Result<(), PStateError> {
 
     let sys = System::new();
     let cpu_temp = sys.cpu_temp().unwrap_or_default();
-    println!("cpu temp:\t\x1b[33m{}°C\x1b[0m", cpu_temp,);
+    println!("cpu temp:\t\x1b[33m{}°C\x1b[0m", cpu_temp);
+
+    println!("");
+
+    let s = SysInfoSystem::new_with_specifics(
+        RefreshKind::new().with_cpu(CpuRefreshKind::everything()),
+    );
+    for (i, cpu) in s.cpus().iter().enumerate() {
+        println!(
+            "cpu{} freq:\t\x1b[33m{}GHz\x1b[0m",
+            i,
+            cpu.frequency() as f32 / 1000.0
+        );
+    }
 
     Ok(())
 }
