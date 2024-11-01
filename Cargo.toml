@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 intel-pstate = "1.0.1"
+systemstat = "0.2.3"

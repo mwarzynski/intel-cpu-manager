@@ -1,4 +1,6 @@
 use intel_pstate::{PState, PStateError};
+use systemstat::{Platform, System};
+
 use std::env;
 
 fn turbo_enable() -> Result<(), PStateError> {
@@ -34,15 +36,19 @@ fn print_info() -> Result<(), PStateError> {
 
     let turbo_enabled = !values.no_turbo;
 
-    println!("turbo: \x1b[33m{}\x1b[0m", turbo_enabled);
+    println!("turbo:\t\t\x1b[33m{}\x1b[0m", turbo_enabled);
     println!(
-        "hwp_dynamic_boost: \x1b[33m{:?}\x1b[0m",
+        "dynamic_boost:\t\x1b[33m{:?}\x1b[0m",
         values.hwp_dynamic_boost
     );
     println!(
-        "perf_pct_range: \x1b[33m{}-{}\x1b[0m",
+        "perf_pct_range:\t\x1b[33m[{}%,{}%]\x1b[0m",
         values.min_perf_pct, values.max_perf_pct,
     );
+
+    let sys = System::new();
+    let cpu_temp = sys.cpu_temp().unwrap_or_default();
+    println!("cpu temp:\t\x1b[33m{}°C\x1b[0m", cpu_temp,);
 
     Ok(())
 }
