@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+anyhow = "1.0.94"
 intel-pstate = "1.0.1"
 sysinfo = "0.32.0"
 systemstat = "0.2.3"
