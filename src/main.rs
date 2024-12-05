@@ -6,7 +6,7 @@ use std::env;
 
 fn turbo_enable() -> Result<(), PStateError> {
     let pstate = PState::new()?;
-    let _ = pstate.set_hwp_dynamic_boost(false);
+    let _ = pstate.set_hwp_dynamic_boost(true);
     pstate.set_min_perf_pct(0)?;
     pstate.set_max_perf_pct(100)?;
     pstate.set_no_turbo(false)?;
