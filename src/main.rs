@@ -26,7 +26,7 @@ fn scaling_governor_set(governor: &str) -> std::io::Result<()> {
     Ok(())
 }
 
-fn turbo_enable() -> Result<(), Error> {
+fn mode_turbo() -> Result<(), Error> {
     let pstate = PState::new()?;
     let _ = pstate.set_hwp_dynamic_boost(true);
     pstate.set_min_perf_pct(0)?;
@@ -36,7 +36,17 @@ fn turbo_enable() -> Result<(), Error> {
     Ok(())
 }
 
-fn turbo_disable() -> Result<(), Error> {
+fn mode_performance() -> Result<(), Error> {
+    let pstate = PState::new()?;
+    let _ = pstate.set_hwp_dynamic_boost(true);
+    pstate.set_min_perf_pct(0)?;
+    pstate.set_max_perf_pct(100)?;
+    pstate.set_no_turbo(true)?;
+    scaling_governor_set("performance")?;
+    Ok(())
+}
+
+fn mode_powersave() -> Result<(), Error> {
     let pstate = PState::new()?;
     let _ = pstate.set_hwp_dynamic_boost(false);
     pstate.set_min_perf_pct(0)?;
@@ -89,16 +99,20 @@ fn main() -> Result<(), Error> {
     let args: Vec<String> = env::args().collect();
 
     let empty_str = String::from("");
-    let should_enable_turbo = args.get(1).unwrap_or(&empty_str).eq("true");
+    let should_set_mode_performance = args.get(1).unwrap_or(&empty_str).eq("true");
+    let should_set_mode_turbo = args.get(1).unwrap_or(&empty_str).eq("turbo");
 
-    if should_enable_turbo {
-        println!("\x1b[31mEnable TURBO!\x1b[0m");
-        turbo_enable()?;
+    if should_set_mode_turbo {
+        println!("\x1b[31mTURBO!\x1b[0m");
+        mode_turbo()?;
+    } else if should_set_mode_performance {
+        println!("\x1b[33mPerformance mode.\x1b[0m");
+        mode_performance()?;
     } else if args.len() == 1 {
         print_info()?;
     } else {
-        println!("\x1b[32mDisable TURBO.\x1b[0m");
-        turbo_disable()?;
+        println!("\x1b[32mPower_saving mode.\x1b[0m");
+        mode_powersave()?;
     }
 
     Ok(())
