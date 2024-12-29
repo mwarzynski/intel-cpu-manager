@@ -1,9 +1,9 @@
-# intel-cpu-turbo
+# intel-cpu-manager
 
 CLI tool that allows to manage the Intel CPU Turbo Boost and Dynamic Boost.
 
 ```
-~ intel-cpu-turbo
+~ intel-cpu-manager
 turbo:		true
 dynamic_boost:	Some(false)
 perf_pct_range:	[10%,100%]
@@ -20,11 +20,16 @@ cpu7 freq:	0.8GHz
 ```
 
 ```
-~ intel-cpu-turbo true
-Enable TURBO!
+$ intel-cpu-manager true
+Performance mode.
 ```
 
 ```
-~ intel-cpu-turbo false
-Disable TURBO.
+$ intel-cpu-manager false
+Power_saving mode.
+```
+
+```
+$ intel-cpu-manager turbo
+TURBO!
 ```
