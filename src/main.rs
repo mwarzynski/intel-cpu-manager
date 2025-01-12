@@ -1,10 +1,9 @@
 use anyhow::Error;
+use clap::Parser;
 use intel_pstate::PState;
+use std::fs;
 use sysinfo::{CpuRefreshKind, RefreshKind, System as SysInfoSystem};
 use systemstat::{Platform, System};
-
-use std::env;
-use std::fs;
 
 fn scaling_governor_read() -> std::io::Result<String> {
     let path = format!("/sys/devices/system/cpu/cpufreq/policy0/scaling_governor");
@@ -95,24 +94,68 @@ fn print_info() -> Result<(), Error> {
     Ok(())
 }
 
+#[derive(Parser)] // requires `derive` feature
+#[command(
+    name = "intel-cpu-manager",
+    about = "Manage Intel CPU power modes",
+    version = env!("INTEL_CPU_MANAGER_VERSION")
+)]
+#[command(bin_name = "intel-cpu-manager")]
+#[command(styles = CLAP_STYLING)]
+enum CargoCli {
+    #[command(about = "Enable power-saving mode for the CPU")]
+    PowerSave(PowerSaveArgs),
+
+    #[command(about = "Enable performance mode for the CPU with optional turbo mode")]
+    Performance(PerformanceArgs),
+}
+
+// See also `clap_cargo::style::CLAP_STYLING`
+pub const CLAP_STYLING: clap::builder::styling::Styles = clap::builder::styling::Styles::styled()
+    .header(clap_cargo::style::HEADER)
+    .usage(clap_cargo::style::USAGE)
+    .literal(clap_cargo::style::LITERAL)
+    .placeholder(clap_cargo::style::PLACEHOLDER)
+    .error(clap_cargo::style::ERROR)
+    .valid(clap_cargo::style::VALID)
+    .invalid(clap_cargo::style::INVALID);
+
+#[derive(clap::Args)]
+#[command(about, long_about = None)]
+struct PowerSaveArgs {}
+
+#[derive(clap::Args)]
+#[command(about, long_about = None)]
+struct PerformanceArgs {
+    /// Enable turbo mode.
+    #[arg(short, long, default_value_t = false)]
+    turbo: bool,
+}
+
 fn main() -> Result<(), Error> {
-    let args: Vec<String> = env::args().collect();
+    let args = std::env::args();
 
-    let empty_str = String::from("");
-    let should_set_mode_performance = args.get(1).unwrap_or(&empty_str).eq("true");
-    let should_set_mode_turbo = args.get(1).unwrap_or(&empty_str).eq("turbo");
-
-    if should_set_mode_turbo {
-        println!("\x1b[31mTURBO!\x1b[0m");
-        mode_turbo()?;
-    } else if should_set_mode_performance {
-        println!("\x1b[33mPerformance mode.\x1b[0m");
-        mode_performance()?;
-    } else if args.len() == 1 {
+    if args.len() <= 1 {
         print_info()?;
-    } else {
-        println!("\x1b[32mPower_saving mode.\x1b[0m");
-        mode_powersave()?;
+        return Ok(());
+    }
+
+    let cli = CargoCli::parse();
+
+    match cli {
+        CargoCli::PowerSave(_) => {
+            mode_powersave()?;
+            println!("\x1b[32mPower_saving mode.\x1b[0m");
+        }
+        CargoCli::Performance(args) => {
+            if args.turbo {
+                mode_turbo()?;
+                println!("\x1b[31mTURBO!\x1b[0m");
+            } else {
+                mode_performance()?;
+                println!("\x1b[33mPerformance mode.\x1b[0m");
+            }
+        }
     }
 
     Ok(())

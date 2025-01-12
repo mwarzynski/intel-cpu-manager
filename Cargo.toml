@@ -5,6 +5,8 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.94"
+clap = { version = "4.5.26", features = ["cargo", "derive"] }
+clap-cargo = "0.15.1"
 intel-pstate = "1.0.1"
 sysinfo = "0.32.0"
 systemstat = "0.2.3"
